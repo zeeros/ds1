@@ -1,0 +1,22 @@
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'application'
+
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+    implementation group: 'com.typesafe.akka', name: 'akka-actor_2.13', version: '2.6.3'
+}
+
+compileJava {
+    options.compilerArgs += ["-Xlint:deprecation"]
+}
+mainClassName = "it.unitn.ds1.BankSystem"
+
+run {
+    standardInput = System.in
+}

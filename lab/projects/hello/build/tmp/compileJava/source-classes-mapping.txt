@@ -1,0 +1,7 @@
+it/unitn/ds1/HelloExample.java
+ it.unitn.ds1.HelloExample
+it/unitn/ds1/Receiver.java
+ it.unitn.ds1.Receiver
+ it.unitn.ds1.Receiver$Hello
+it/unitn/ds1/Sender.java
+ it.unitn.ds1.Sender
