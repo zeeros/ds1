@@ -1,29 +1,223 @@
-#+TITLE: Distributed System 1 - Lab setup
-* =ds1/lab= image
+#+TITLE: Distributed Systems 1 Lab
 
-We are going to use =oracle/jdk:8=[fn:1] as a base image for the =ds1/lab= image.
+* Actor-based model
 
-First, we have to build the =oracle/jdk:8= image. The Dockerfile can be found [[https://raw.githubusercontent.com/oracle/docker-images/main/OracleJava/8/Dockerfile    ][here]], but we also need to place the following archives in the same location as the Dockerfile
-- jdk-8u281-linux-x64.tar.gz (download [[https://www.oracle.com/java/technologies/javase/javase-jdk8-downloads.html    ][here]])
-- server-jre-8u281-linux-x64.tar.gz (download [[https://www.oracle.com/java/technologies/javase-server-jre8-downloads.html    ][here]])
+** Why?
 
-#+BEGIN_SRC sh :results output silent
-docker build -t oracle/jdk:8 ./oraclejdk/
+- Easier multi-threading :: No low-level concurrency constructs (like threads, shared memory, locks)
+- Network transparency :: Remote objects communicate explicitly, like with local objects (and unlike RPC/RMI)
+- Scalable architecture :: To guarantee elasticity
+
+In distributed program following this model, actors
+- Encapsulate state and behaviour (like objects in OOP)
+- Use message passing to interact with each other (unlike OOP, where method calls are used)
+
+** Message passing vs method calls
+
+Consider method calls in OOP
+- Multi-threading :: Multiple threads in the same local machine may directly access the same variable simultaneously
+  - We need to prevent race conditions and cache problems
+  - Techniques such as memory barriers, locks, condition variables are tricky and don't prevent thread blocking
+    - Deadlocks :: Threads endlessly wait for each other
+    - Thread contention :: Locks are expensive and can create bottlenecks
+- Distributed system :: Here we have nodes and not threads, but the same problems arise in this scenario
+
+Consider message passing in the actor model
+- No direct access, no concurrency :: This removes any race condition and caching problem
+- Non-blocking tasks :: Messages are non-blocking and have no return value
+- Queues :: Incoming messages are queued if the receiver is busy
+
+** The actor
+
+The core of an actor is composed by
+- Message queue :: That stores incoming messages
+- Dispatcher :: Reads messages from the queue and gives them to the proper handler
+- Handlers :: Method that execute tasks, it can send messages to other actors
+- Variables :: Describe the internal state
+
+Implementing an actor is basically describing
+- What are the messages of the system?
+- What is the internal state?
+- What is the mapping between incoming messages and tasks?
+- How should the task be completed?
+
+* akka
+
+akka is a toolkit that uses the actor model to build distributed systems where
+- Actors may run in different threads (one thread per actor) or computers
+- Message queues are FIFO
+- Send are non-blocking
+- There is no guarantee on message delivery (from akka, lower layers might deal with it)
+- Messages are serializable
+- Deployment on a cluster is easy and scalable
+
+** Encapsulation problem
+
+Java doesn't enforce encapsulation of actors: this means that in fact actors can change each other state without sending a message. Respecting the actors role is in the hands of the programmer. For example
+- In Java, an object is *mutable* if its internal state can be changed after being instantiated. In akka, if we send an object's reference to a
+  - Remote destination :: akka serializises and sends the actual content of the object
+  - Local destination :: Since the memory is shared between sender and receiver, the reference can be used by the latter to access the same object. Messages must be self-contained: when sending a message, don't send any reference to mutable objects but send a copy of the object instead.
+- In Java, a *static* variable is directly accessible by all the instances of the respective class. In any actor class or classes accessible by actors, non-final static class must be avoided.
+- Threads should not access internals of any actor.
+
+Akka implements some optimizations. For example, when messages are sent between local actors akka sends their reference, not their value.
+
+The variable ~msg~, as any ~String~ object, is immutable. Also, it is declared as ~final~: one a value is assigned to it, it can't be changed. In this case, the ~final~ statement prevents the reference of the object to be changed.
+
+#+BEGIN_SRC java
+public class Hello implements Serializable{
+    private final String msg;
+    public Hello(String msg){
+	this.msg = msg;
+    }
+}
 #+END_SRC
 
-Now we can build the =ds1/lab= image.
+Assume ~ActorRef~ is immutable. Here ~group~ is mutable and ~final~, and we set its values as a copy of the argument passed to the constructor.
+- ~this.group = new ArrayList<>(group)~ would not be enough: a new ~group~ would be allocated by the sender, but all the receivers would share the same reference.
+- ~this.group = Collections.unmodifiableList(group)~ would not be enough either: ~unmodifiableList~ creates an unmodifiable view, so if the sender modifies ~group~ all the receivers will see the change.
 
-#+BEGIN_SRC sh :results output silent
-docker build -t ds1/lab .
+#+BEGIN_SRC java
+public class JoinGroupMsg implements Serializable {
+    private final List<ActorRef> group;
+    public JoinGroupMsg(List<ActorRef> group){
+	this.group = Collections.unmodifiableList(new ArrayList<>(group));
+    }
+}
 #+END_SRC
 
-And finally run the container
+** Actor
 
-#+BEGIN_SRC sh :session s :results output silent
-docker rm ds1lab
-docker run --name ds1lab -it ds1/lab gradle -v
+Actors are not directly instantiated by the constructor, instead the factory pattern is used: first actor properties are created, defining how to instantiate the actor.
+
+#+BEGIN_SRC java
+class MyActor extends AbstractActor{
+    //internal variables can be defined here
+    private int id;
+
+    //constructor
+    public MyActor(int id){
+	this.id = id;
+    }
+
+    //properties, used by the system to create actors
+    static public Props props(int id){
+	return Props.create(MyActor.class, () -> new MyActor(id));
+    }
+}
 #+END_SRC
+
+Initialization is as follow. Notice how an ~ActorSystem~ is used to instantiate the actor, and returns a reference to the actor.
+
+#+BEGIN_SRC java
+public static void main(String[] args) {
+    //Create an actor system name "helloakka"
+    final ActorSystem system = ActorSystem.create("helloakka");
+    //Create an actor
+    final ActorRef myactor = system.actorOf(MyActor.props(352),"actor352");
+}
+#+END_SRC
+
+To send a message, we call the ~tell~ method from the destination actor reference ~myactor~ by providing the message and the sender reference (can be null to be anonymous).
+
+#+BEGIN_SRC
+Hello m = new Hello("Hi there!");
+myactor.tell(m, getSelf());
+#+END_SRC
+
+To receive messages, we override the ~createReceive~ method from akka to define the mapping.
+#+BEGIN_SRC java
+@Override
+public Receive createReceive() {
+    return receiveBuilder()
+	.match(Message1,class, this::onMessage1)
+	.match(Message2,class, this::onMessage2)
+	.match(Message3,class, this::onMessage3)
+	.build();
+}
+
+private void onMessage1(Message1 msg){...}
+private void onMessage2(Message1 msg){...}
+private void onMessage3(Message1 msg){...}
+#+END_SRC
+
+Some useful methods are
+- ~void preStart()~ (abstract) is called after actor initialization, before processing any message
+- ~getSelf()~ returns ~ActorRef~ of the object itself
+- ~getSelf().path().name()~ returns the name of the actor
+- ~getContext().system().scheduler().schedule()~ to schedule actions
+- ~getSender()~ return the reference for the current message
+
+* Causal delivery
+
+Here we showcase a toy group chat system, using only local actors
+- Chat users :: Chat on a specific topic
+- Listeners :: See all the messages but don't chat
+
+For such system we want to guarantee casual delivery: nobody can deliver a reply to a message before the message itself is delivered.
+
+Remember that akka guarantees ordering only between sender and receiver (FIFO message queues), so ordering between multiple actors is not guaranteed by akka but we can do it
+- Using a buffer to store received messages, that might be out of order
+- Delivering the messages in order from the buffer
+
+The order is implemented using vector clocks.
+- Any sender $S$ sets first the vector clock $V_S[S] = V_S[S]+1$, then sends it with the message $m$
+- $m$ is delivered to receiver $R$ only when the following conditions are met
+  1. $V_S[S]=V_R[S]+1$, that is $m$ is next message that $R$ expected from $S$
+  2. $V_S[i] \leq V_R[i]\ \forall i \neq S$, that is $S$ saw at most as many messages as $R$ when sending $m$
+- Are the previous conditions satisfied?
+  - No :: $m$ goes to the buffer
+  - Yes :: Before delivering $m$, $R$ updates its vector clock $V_R$ with $V_S$
+
+* Distributed snapshot [fn:1]
+
+Given a generic distributed systems, we might want to take a picture that represents its state and in doing so we don't wont to disrupt the underlying computation. Assume we deal with a distributed system where
+- Processes send messages through channels
+- Channels are error-free
+- Any message sent between a sender and a receiver is delivered in order
+- Messages will eventually arrive
+
+A snapshot should capture the state of the processes, but also the state of the channels: otherwise any message that is travelling to a receiver will be absent from the snapshot, making it inconsinstent. To overcome this situation, we may use markers/tokens to set a logical point in time.
+
+After recording its state, a process must send a token to each outgoing channel. The full global state detection algorithm uses two rules for the marker
+- Marker sending rule :: Given a process $p$, for each channel $c$ directed away from $p$, $p$ sends a marker along $c$
+  - After $p$ records its state
+  - Before $p$ sends any message along $c$
+- Marker receiving rule :: Given a process $q$ that receives a marker along $c$, has $q$ already recorded its state?
+  - No :: $q$ records its state and the state of $c$ as empty
+  - Yes :: $q$ records the state of $c$ as the sequence of messages received along $c$ inbetween $q$ recording its state and receiving the marker on $c$
+
+The procedure can be triggered by any process, and ends as soon as all the tokens are receveid by the first process.
+
+This algorithm has been described by Chandy & Lamport in 1985. Notice that while the resulting snapshot may not correspond to any state the system was in at a given point in time, the snapshot represents a state that is logically consistent: it is guaranteed that
+- It is reachable from the initial system state
+- From it, we can reach the final system state
+
+** Bank distributed snaspshot
+
+We have a distributed system made by banks exchanging money through channels
+- Messages are just amounts of money
+- The local state is the bank balance
+- Given a bank, we don't need to store all the transactions but just the resulting sum
+
+A simplified version of the original algorithm follows
+- $A$ receives a token :: $A$ records its balances (if not done yet), sets ~money-in-transit~ to 0 and sends a token to all peer banks
+- Bank $A$ sends a token to bank $B$ :: After $A$ records its balance, before $A$ sends any further money to $B$
+- Bank $B$ receives money from bank $A$ :: If $B$ recorded its balance but received no token from $A$, $B$ sums incoming amounts to ~money-in-transit~
+
+Some details on the akka implementation
+- 10 banks starts with a balance of $1000
+- Each bank sends money continuously to random peers
+- There is a bank that broadcasts tokens once every second, and we can assume that a snapshot completes before another starts
+- If a bank receives a token, it prints its current balance
+- When the program is terminated, a output log is produced: another program checks the results of the log
+However, the implementation is "faulty": the captured amount of money will not correspond to $10000, some money got lost.
+
+The new aspect introduced by this implementation is the scheduling part: how can bank $Bank_0$ periodically take snapshots?
+- By using an akka timer
+- By sending a scheduled message to itself
+- By delegating the ~main~ method to call a ~StartSnapshot~ of $Bank_0$
 
 * Footnotes
 
-[fn:1] https://github.com/oracle/docker-images/tree/main/OracleJava
+[fn:1] https://blog.acolyer.org/2015/04/22/distributed-snapshots-determining-global-states-of-distributed-systems/
