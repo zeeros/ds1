@@ -5,7 +5,9 @@ ltximg
 *#
 *.tar.gz
 *.zip
-/occ4txn
+
+# Course project is versioned by its own repository
+occ4txn/
 
 # Gradle related files and caches
 .gradletasknamecache
