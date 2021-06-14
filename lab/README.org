@@ -1,20 +1,39 @@
-#+TITLE: Distributed Systems 1 Lab
+#+TITLE: Distributed Systems 1
 
-* Actor-based model
+* Lab 0 - Hello world
 
-** Why?
+First of all, unzip the provided example "hello.zip".
 
+If you use a Java IDE (Idea, Eclipse, etc.), import the provided Gradle project (hello/build.gradle)
+in the IDE and try to run it. You should see the output listed below.
+
+If you prefer using the command line and a plain text editor for programming, follow the instructions below.
+
+1. Download and install Java SDK, Standard Edition. Version 8 is recommended for compatibility reasons.
+   http://www.oracle.com/technetwork/java/javase/downloads/index.html
+2. Install Gradle build tool
+   https://gradle.org/install/
+3. In the command line, change dir to "hello" and run the project:
+      cd hello
+      gradle run
+4. You should see output like this (hit enter to stop the program)
+#+BEGIN_CODE
+[receiver] received a message from sender2: Hello from sender2
+[receiver] received a message from sender3: Hello from sender3
+[receiver] received a message from sender4: Hello from sender4
+[receiver] received a message from sender0: Hello from sender0
+[receiver] received a message from sender1: Hello from sender1
+#+END_CODE
+
+* Lab 1 - Akka: introduction and simple examples
+** Actor-based model
+
+The actor-bases presents several advantages
 - Easier multi-threading :: No low-level concurrency constructs (like threads, shared memory, locks)
 - Network transparency :: Remote objects communicate explicitly, like with local objects (and unlike RPC/RMI)
 - Scalable architecture :: To guarantee elasticity
 
-In distributed program following this model, actors
-- Encapsulate state and behaviour (like objects in OOP)
-- Use message passing to interact with each other (unlike OOP, where method calls are used)
-
-** Message passing vs method calls
-
-Consider method calls in OOP
+Both the OOP and Actor-based use encapsulation for state and behavior, however their main difference lays on their interaction paradigm. Consider method calls in OOP
 - Multi-threading :: Multiple threads in the same local machine may directly access the same variable simultaneously
   - We need to prevent race conditions and cache problems
   - Techniques such as memory barriers, locks, condition variables are tricky and don't prevent thread blocking
@@ -22,12 +41,10 @@ Consider method calls in OOP
     - Thread contention :: Locks are expensive and can create bottlenecks
 - Distributed system :: Here we have nodes and not threads, but the same problems arise in this scenario
 
-Consider message passing in the actor model
+On the other hand, with message passing in the actor model
 - No direct access, no concurrency :: This removes any race condition and caching problem
 - Non-blocking tasks :: Messages are non-blocking and have no return value
 - Queues :: Incoming messages are queued if the receiver is busy
-
-** The actor
 
 The core of an actor is composed by
 - Message queue :: That stores incoming messages
@@ -35,13 +52,13 @@ The core of an actor is composed by
 - Handlers :: Method that execute tasks, it can send messages to other actors
 - Variables :: Describe the internal state
 
-Implementing an actor is basically describing
+Implementing an actor is basically answering
 - What are the messages of the system?
 - What is the internal state?
 - What is the mapping between incoming messages and tasks?
 - How should the task be completed?
 
-* akka
+** akka
 
 akka is a toolkit that uses the actor model to build distributed systems where
 - Actors may run in different threads (one thread per actor) or computers
@@ -51,18 +68,16 @@ akka is a toolkit that uses the actor model to build distributed systems where
 - Messages are serializable
 - Deployment on a cluster is easy and scalable
 
-** Encapsulation problem
+*** Encapsulation problem
 
-Java doesn't enforce encapsulation of actors: this means that in fact actors can change each other state without sending a message. Respecting the actors role is in the hands of the programmer. For example
-- In Java, an object is *mutable* if its internal state can be changed after being instantiated. In akka, if we send an object's reference to a
-  - Remote destination :: akka serializises and sends the actual content of the object
-  - Local destination :: Since the memory is shared between sender and receiver, the reference can be used by the latter to access the same object. Messages must be self-contained: when sending a message, don't send any reference to mutable objects but send a copy of the object instead.
-- In Java, a *static* variable is directly accessible by all the instances of the respective class. In any actor class or classes accessible by actors, non-final static class must be avoided.
-- Threads should not access internals of any actor.
+Java can't enforce actors encapsulation, so the programmer makes sure that no variable is accessible from multiple actors instances. For example
+- Send copies of mutable objects (not their references).
+- In actors, or any class used by them, static variables must be final.
+- Don't use threads (or at least don't access the internal state of actor through them).
 
 Akka implements some optimizations. For example, when messages are sent between local actors akka sends their reference, not their value.
 
-The variable ~msg~, as any ~String~ object, is immutable. Also, it is declared as ~final~: one a value is assigned to it, it can't be changed. In this case, the ~final~ statement prevents the reference of the object to be changed.
+The variable ~msg~, as any ~String~ object, is immutable. Also, it is declared as ~final~: once its value is assigned it can't be changed. In this case, the ~final~ statement prevents the reference of the object to be changed.
 
 #+BEGIN_SRC java
 public class Hello implements Serializable{
@@ -86,9 +101,9 @@ public class JoinGroupMsg implements Serializable {
 }
 #+END_SRC
 
-** Actor
+*** Actor
 
-Actors are not directly instantiated by the constructor, instead the factory pattern is used: first actor properties are created, defining how to instantiate the actor.
+Actors are not directly instantiated by the constructor, instead the factory pattern is used: actor properties are created, defining how to instantiate the actor.
 
 #+BEGIN_SRC java
 class MyActor extends AbstractActor{
@@ -147,12 +162,12 @@ Some useful methods are
 - ~getSelf().path().name()~ returns the name of the actor
 - ~getContext().system().scheduler().schedule()~ to schedule actions
 - ~getSender()~ return the reference for the current message
-
-* Causal delivery
+* Lab 2 - Akka: causal delivery & global snapshot
+** Causal delivery
 
 Here we showcase a toy group chat system, using only local actors
 - Chat users :: Chat on a specific topic
-- Listeners :: See all the messages but don't chat
+- Listeners :: See all the messages, but don't chat
 
 For such system we want to guarantee casual delivery: nobody can deliver a reply to a message before the message itself is delivered.
 
@@ -169,7 +184,7 @@ The order is implemented using vector clocks.
   - No :: $m$ goes to the buffer
   - Yes :: Before delivering $m$, $R$ updates its vector clock $V_R$ with $V_S$
 
-* Distributed snapshot [fn:1]
+** Distributed snapshot [fn:1]
 
 Given a generic distributed systems, we might want to take a picture that represents its state and in doing so we don't wont to disrupt the underlying computation. Assume we deal with a distributed system where
 - Processes send messages through channels
@@ -193,7 +208,7 @@ This algorithm has been described by Chandy & Lamport in 1985. Notice that while
 - It is reachable from the initial system state
 - From it, we can reach the final system state
 
-** Bank distributed snaspshot
+*** Bank distributed snaspshot
 
 We have a distributed system made by banks exchanging money through channels
 - Messages are just amounts of money
@@ -217,6 +232,37 @@ The new aspect introduced by this implementation is the scheduling part: how can
 - By using an akka timer
 - By sending a scheduled message to itself
 - By delegating the ~main~ method to call a ~StartSnapshot~ of $Bank_0$
+
+* Lab 3 - Akka: virtual synchrony
+
+Lets define a *correct* process as one that does not fail. A *reliable multicast*, or all-or-none, for a message =m= must respect the following properties
+- Validity :: If the sender is correct, =m= is delivered eventually.
+- Integrity :: A process delivers =m= at most once, and only if it was previously sent.
+- Agreement :: If a correct process delivers =m= then all processes deliver =m=.
+
+In a system where the group of correct processes changes over time (join, leave, crash) members need to have a consistent view of the group. This can be achieved with *Virtual Synchrony* (*VS*), where
+- Views represent a *global epoch*, since each process a maintains a view of the group and correct processes see the same sequence of views.
+- Multicast messages *can't cross* epoch boundaries, so new views can be installed only as soon as all multicast from the previous group are completed (all-or-none): if a correct process delivers =m= in epoch =E=, all correct processes deliver =m= in epoch =E=.
+
+Broadcast messages containing view changes are sent whenever a member joins or leaves the group. However, each member needs to execute an all-to-all flush to ensure all the messages from the old view have been delivered.
+
+[[./img/vs_implementation.jpg]]
+
+We rely on a group manager, that is the only actor that can propose view changes. This allows to manage in a single point concurrent requests and order them.
+
+[[./img/group_manager.jpg]]
+
+Crash are simulated as using a "crash" state and with by defining with akka a new receiver behaviour.
+
+[[./img/crash_sim.jpg]]
+
+
+* Lab 4 - Akka: 2PC
+
+
+With *Two-phase commit*, a coordinator =C= decides for all nodes if a transaction should be committed or aborted (all-or-nothing atomic commit). The decision is driven by voting, requiring all partecipants to agree to execute the commit.
+
+[[./img/2pc.jpg]]
 
 * Footnotes
 
