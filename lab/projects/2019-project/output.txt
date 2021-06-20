@@ -1,0 +1,192 @@
+2 install view 4 0, 1, 2
+2 send multicast 2-0 within 4 
+2 deliver multicast 0-8 from 0 within 4
+2 send multicast 2-1 within 4 
+2 deliver multicast 1-11 from 1 within 4
+2 deliver multicast 0-9 from 0 within 4
+2 deliver multicast 1-12 from 1 within 4
+2 send multicast 2-2 within 4 
+2 deliver multicast 0-10 from 0 within 4
+2 send multicast 2-3 within 4 
+2 deliver multicast 1-13 from 1 within 4
+2 deliver multicast 0-11 from 0 within 4
+2 send multicast 2-4 within 4 
+2 deliver multicast 1-14 from 1 within 4
+2 install view 5 0, 2
+2 deliver multicast 0-12 from 0 within 5
+2 send multicast 2-5 within 5 
+2 deliver multicast 0-13 from 0 within 5
+2 send multicast 2-6 within 5 
+2 deliver multicast 0-14 from 0 within 5
+2 deliver multicast 0-15 from 0 within 5
+2 install view 6 0, 2, 3
+2 send multicast 2-7 within 6 
+2 deliver multicast 0-16 from 0 within 6
+2 deliver multicast 3-0 from 3 within 6
+2 send multicast 2-8 within 6 
+2 deliver multicast 0-17 from 0 within 6
+2 deliver multicast 3-1 from 3 within 6
+2 send multicast 2-9 within 6 
+2 deliver multicast 0-18 from 0 within 6
+2 send multicast 2-10 within 6 
+2 deliver multicast 3-2 from 3 within 6
+2 deliver multicast 0-19 from 0 within 6
+2 send multicast 2-11 within 6 
+2 deliver multicast 3-3 from 3 within 6
+2 deliver multicast 3-4 from 3 within 6
+2 deliver multicast 0-20 from 0 within 6
+2 send multicast 2-12 within 6 
+2 deliver multicast 0-21 from 0 within 6
+2 send multicast 2-13 within 6 
+2 deliver multicast 3-5 from 3 within 6
+2 deliver multicast 0-22 from 0 within 6
+2 send multicast 2-14 within 6 
+2 deliver multicast 3-6 from 3 within 6
+2 deliver multicast 0-23 from 0 within 6
+2 send multicast 2-15 within 6 
+
+3 install view 6 0, 2, 3
+3 deliver multicast 2-7 from 2 within 6
+3 deliver multicast 0-16 from 0 within 6
+3 send multicast 3-0 within 6 
+3 deliver multicast 2-8 from 2 within 6
+3 deliver multicast 0-17 from 0 within 6
+3 send multicast 3-1 within 6 
+3 deliver multicast 2-9 from 2 within 6
+3 deliver multicast 0-18 from 0 within 6
+3 deliver multicast 2-10 from 2 within 6
+3 send multicast 3-2 within 6 
+3 deliver multicast 0-19 from 0 within 6
+3 deliver multicast 2-11 from 2 within 6
+3 send multicast 3-3 within 6 
+3 send multicast 3-4 within 6 
+3 deliver multicast 0-20 from 0 within 6
+3 deliver multicast 2-12 from 2 within 6
+3 deliver multicast 0-21 from 0 within 6
+3 deliver multicast 2-13 from 2 within 6
+3 send multicast 3-5 within 6 
+3 deliver multicast 0-22 from 0 within 6
+3 deliver multicast 2-14 from 2 within 6
+3 send multicast 3-6 within 6 
+3 deliver multicast 0-23 from 0 within 6
+3 deliver multicast 2-15 from 2 within 6
+
+0 install view 1 0, 1
+0 deliver multicast 1-0 from 1 within 1
+0 deliver multicast 1-1 from 1 within 1
+0 send multicast 0-0 within 1 
+0 deliver multicast 1-2 from 1 within 1
+0 install view 2 0, 1, 2
+0 deliver multicast 2-0 from 2 within 2
+0 deliver multicast 1-3 from 1 within 2
+0 send multicast 0-1 within 2 
+0 deliver multicast 2-1 from 2 within 2
+0 deliver multicast 1-4 from 1 within 2
+0 deliver multicast 2-2 from 2 within 2
+0 send multicast 0-2 within 2 
+0 deliver multicast 1-5 from 1 within 2
+0 deliver multicast 2-3 from 2 within 2
+0 send multicast 0-3 within 2 
+0 deliver multicast 1-6 from 1 within 2
+0 deliver multicast 2-4 from 2 within 2
+0 deliver multicast 1-7 from 1 within 2
+0 send multicast 0-4 within 2 
+0 send multicast 0-5 within 2 
+0 deliver multicast 1-8 from 1 within 2
+0 install view 3 0, 1
+0 deliver multicast 1-9 from 1 within 3
+0 send multicast 0-6 within 3 
+0 send multicast 0-7 within 3 
+0 deliver multicast 1-10 from 1 within 3
+0 install view 4 0, 1, 2
+0 send multicast 0-8 within 4 
+0 deliver multicast 1-11 from 1 within 4
+0 send multicast 0-9 within 4 
+0 deliver multicast 1-12 from 1 within 4
+0 send multicast 0-10 within 4 
+0 deliver multicast 1-13 from 1 within 4
+0 send multicast 0-11 within 4 
+0 deliver multicast 1-14 from 1 within 4
+0 install view 5 0, 2
+0 send multicast 0-12 within 5 
+0 deliver multicast 2-5 from 2 within 5
+0 send multicast 0-13 within 5 
+0 deliver multicast 2-6 from 2 within 5
+0 send multicast 0-14 within 5 
+0 send multicast 0-15 within 5 
+0 install view 6 0, 2, 3
+0 deliver multicast 2-7 from 2 within 6
+0 send multicast 0-16 within 6 
+0 deliver multicast 3-0 from 3 within 6
+0 deliver multicast 2-8 from 2 within 6
+0 send multicast 0-17 within 6 
+0 deliver multicast 3-1 from 3 within 6
+0 deliver multicast 2-9 from 2 within 6
+0 send multicast 0-18 within 6 
+0 deliver multicast 2-10 from 2 within 6
+0 deliver multicast 3-2 from 3 within 6
+0 send multicast 0-19 within 6 
+0 deliver multicast 2-11 from 2 within 6
+0 deliver multicast 3-3 from 3 within 6
+0 deliver multicast 3-4 from 3 within 6
+0 send multicast 0-20 within 6 
+0 deliver multicast 2-12 from 2 within 6
+0 send multicast 0-21 within 6 
+0 deliver multicast 2-13 from 2 within 6
+0 deliver multicast 3-5 from 3 within 6
+0 send multicast 0-22 within 6 
+0 deliver multicast 2-14 from 2 within 6
+0 deliver multicast 3-6 from 3 within 6
+0 send multicast 0-23 within 6 
+0 deliver multicast 2-15 from 2 within 6
+
+1 install view 1 0, 1
+1 send multicast 1-0 within 1 
+1 send multicast 1-1 within 1 
+1 deliver multicast 0-0 from 0 within 1
+1 send multicast 1-2 within 1 
+1 install view 2 0, 1, 2
+1 deliver multicast 2-0 from 2 within 2
+1 send multicast 1-3 within 2 
+1 deliver multicast 0-1 from 0 within 2
+1 deliver multicast 2-1 from 2 within 2
+1 send multicast 1-4 within 2 
+1 deliver multicast 2-2 from 2 within 2
+1 deliver multicast 0-2 from 0 within 2
+1 send multicast 1-5 within 2 
+1 deliver multicast 2-3 from 2 within 2
+1 deliver multicast 0-3 from 0 within 2
+1 send multicast 1-6 within 2 
+1 deliver multicast 2-4 from 2 within 2
+1 send multicast 1-7 within 2 
+1 deliver multicast 0-4 from 0 within 2
+1 deliver multicast 0-5 from 0 within 2
+1 send multicast 1-8 within 2 
+1 install view 3 0, 1
+1 send multicast 1-9 within 3 
+1 deliver multicast 0-6 from 0 within 3
+1 deliver multicast 0-7 from 0 within 3
+1 send multicast 1-10 within 3 
+1 install view 4 0, 1, 2
+1 deliver multicast 0-8 from 0 within 4
+1 send multicast 1-11 within 4 
+1 deliver multicast 0-9 from 0 within 4
+1 send multicast 1-12 within 4 
+1 deliver multicast 0-10 from 0 within 4
+1 send multicast 1-13 within 4 
+
+2 install view 2 0, 1, 2
+2 send multicast 2-0 within 2 
+2 deliver multicast 1-3 from 1 within 2
+2 deliver multicast 0-1 from 0 within 2
+2 send multicast 2-1 within 2 
+2 deliver multicast 1-4 from 1 within 2
+2 send multicast 2-2 within 2 
+2 deliver multicast 0-2 from 0 within 2
+2 deliver multicast 1-5 from 1 within 2
+2 send multicast 2-3 within 2 
+2 deliver multicast 0-3 from 0 within 2
+2 deliver multicast 1-6 from 1 within 2
+2 send multicast 2-4 within 2 
+2 deliver multicast 1-7 from 1 within 2
+

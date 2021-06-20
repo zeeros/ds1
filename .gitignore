@@ -9,8 +9,28 @@ ltximg
 # Course project is versioned by its own repository
 occ4txn/
 
-# Gradle related files and caches
-.gradletasknamecache
-.gradle/
-build/
+#No slides
+slides/
+
+### Gradle ###
 bin/
+build/
+.gradle
+.gradletasknamecache
+gradle-app.setting
+!gradle-wrapper.jar
+
+### Eclipse ###
+.settings/
+bin/
+tmp/
+.metadata
+.classpath
+.project
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.loadpath
+.factorypath

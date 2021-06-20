@@ -1,3 +1,16 @@
 #+title: Notes on Distributed Systems 1
 
 Collection of notes and code about the Distributed Systems 1 course, part of the Master in Computer Science at the Università di Trento (UNITN).
+
+* TODO Synchronization
+* TODO Consistency and Replication
+* TODO Middleware
+* TODO Fault tolerance
+** TODO Introduction
+** TODO Client-server communication
+** TODO Reliable group communication
+** TODO Message ordering
+** TODO Agreement in process groups
+** TODO Atomic commitment
+* TODO Distributed Hash Tables
+* TODO Big Distributed Systems

@@ -4,8 +4,7 @@
 
 First of all, unzip the provided example "hello.zip".
 
-If you use a Java IDE (Idea, Eclipse, etc.), import the provided Gradle project (hello/build.gradle)
-in the IDE and try to run it. You should see the output listed below.
+If you use a Java IDE (Idea, Eclipse, etc.), import the provided Gradle project (hello/build.gradle) in the IDE and try to run it. You should see the output listed below.
 
 If you prefer using the command line and a plain text editor for programming, follow the instructions below.
 
@@ -28,7 +27,7 @@ If you prefer using the command line and a plain text editor for programming, fo
 * Lab 1 - Akka: introduction and simple examples
 ** Actor-based model
 
-The actor-bases presents several advantages
+The actor-based model presents several advantages
 - Easier multi-threading :: No low-level concurrency constructs (like threads, shared memory, locks)
 - Network transparency :: Remote objects communicate explicitly, like with local objects (and unlike RPC/RMI)
 - Scalable architecture :: To guarantee elasticity
@@ -162,6 +161,7 @@ Some useful methods are
 - ~getSelf().path().name()~ returns the name of the actor
 - ~getContext().system().scheduler().schedule()~ to schedule actions
 - ~getSender()~ return the reference for the current message
+
 * Lab 2 - Akka: causal delivery & global snapshot
 ** Causal delivery
 
@@ -255,7 +255,6 @@ We rely on a group manager, that is the only actor that can propose view changes
 Crash are simulated as using a "crash" state and with by defining with akka a new receiver behaviour.
 
 [[./img/crash_sim.jpg]]
-
 
 * Lab 4 - Akka: 2PC
 
