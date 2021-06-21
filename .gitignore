@@ -9,9 +9,6 @@ ltximg
 # Course project is versioned by its own repository
 occ4txn/
 
-#No slides
-slides/
-
 ### Gradle ###
 bin/
 build/
