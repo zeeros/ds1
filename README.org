@@ -14,3 +14,4 @@ Collection of notes and code about the Distributed Systems 1 course, part of the
 ** TODO Atomic commitment
 * TODO Distributed Hash Tables
 * TODO Big Distributed Systems
+* [[file:notes/exercises.org][Exercises]]
