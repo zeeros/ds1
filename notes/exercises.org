@@ -1,0 +1,144 @@
+#+TITLE: Exercises
+
+* Vector clocks
+
+[[./img/ex_vc1.jpg]]
+
+The diagram displays an interaction among processes $P_i$ (with their respective initial clocks), messages $m_i$ and local events $e_i$. Assume each local clock can be increased by a send, receive or local event. For each process, what is the value of its clock after the iteration?
+
+Remember that when a process gets a message it increases its local clock and updates the VC with the maximum value between the VC and the values of the clocks in the incoming message.
+
+| P1(1,1,0,1) | P2(1,2,0,1) | P3(1,1,0,1) | P4(1,1,0,4) |
+|-------------+-------------+-------------+-------------|
+| e1(2,1,0,1) | m1(1,3,0,1) | m2(1,1,1,1) | m3(1,1,0,5) |
+| e2(3,1,0,1) | e4(1,4,0,1) | r1(1,3,2,1) | e3(1,1,0,6) |
+| r2(4,1,1,1) | r2(1,5,1,1) | r3(1,3,3,5) | r2(1,1,1,7) |
+| e6(5,1,1,1) | e5(1,6,1,1) | m4(1,3,4,5) | r4(1,3,4,8) |
+| r1(6,3,0,1) | r3(1,7,1,5) | e8(1,3,5,5) | r1(1,3,4,9) |
+| r4(7,3,4,5) | e7(1,8,1,5) |             |             |
+| r3(8,3,4,5) | r4(1,9,4,5) |             |             |
+
+[[./img/ex_vc2.jpg]]
+
+In the following iteration only local events and sendings can increase the local clock. Assume links are FIFO and the local clocks take the values displayed in the diagram. The diagram contains at least three errors w.r.t. to the notion of vector clock and the assumptions, spot and explain them.
+
+First, note that the diagram displays no local event. We provide the correct message exchange and highlight the errors
+- With =m2= the VC should be =(6,4,4)=.
+- The FIFO link assumption is not respected: =P1= receives =m2= after =m4=.
+- With =r4= in =P2= the VC should be =(6,5,5)=.
+- Also, the inital VCs are not possible in a multicast setting.
+
+| P1(5,4,3) | P2(4,4,3) | P3(1,4,3) |
+|-----------+-----------+-----------|
+| m1(6,4,3) | r1(6,4,3) | r1(6,4,3) |
+| r3(6,5,4) | r2(6,4,4) | m2(6,4,4) |
+| r4(6,5,5) | m3(6,5,4) | m4(6,4,5) |
+| r2(6,5,5) | r4(6,5,5) | r3(6,5,5) |
+
+* Distributed snapshots
+
+[[./img/ex_ds1.jpg]]
+
+The diagram represents a distributed snapshot, initiated by node =A=.
+- Archs are unidirectional, with labels representing the values of the messages (=T= for token).
+- Tokens already propagated through the thick archs. 
+- Nodes =A,C,D,E,F= already recorded their local state (shown by the attached oval).
+
+For each node and link, what is the local state recorder by the distributed snapshot?
+
+Other than the local state,  the local snapshot collects counts also all the messages sent after the token =T=. This means that all the messages shared through thick archs are part of the snapshot of the sender. Considering thin archs
+  - Messages sent /after/ =T= are counted in the sender's snapshot.
+  - Messages sent /before/ =T= are counted in the receiver's snapshot.
+
+| A        | C      | D | E | F       |
+| 4+4+6=16 | 5+7=12 | 0 | 7 | 2+2+1=5 |
+
+While thick archs are already "clear", in thin archs the messages that are sent /after/ the token =T= are part of the snapshot of the link.
+
+| AC | AE | BA | CE | CD | DF | ED | FE | FB |
+| X  |  2 |  1 | X  | X  | X  |  1 |  4 |  0 |
+
+The snapshot for node =B= and link =EB= depends on the order of receiption between links =EB= and =FB=. Assuming =B= receives first all messages from =E= and then the ones from =F=, the snapshot will be the following.
+
+| B         | EB | FB |
+| 13+4+5=22 | X  | X  |
+
+As a check, note that the resulting sum of all the values of the snapshot must correspond to the sum of all the numbers in the diagram.
+
+[[./img/ex_ds2.jpg]]
+
+The diagram follows the same conventions previously described, but here there are at least three errors that make the execution incompatible with the distributed snapshot algorithm. Spot and describe them.
+
+- The graph is not strongly connected, since =B= is a sink. The global snapshot still works, but =B= can't act as a initiator.
+- In link =EF= two tokens are shared instead of one.
+- In link =CE= two tokens are (implicitly) shared.
+- =D= can't possibly be sending tokens, since he had received none yet and =A= is the initiator.
+
+* TODO Consistency models
+
+[[./img/ex_con1.jpg]]
+
+For each consistency criteria (FIFO, causal, sequential) tell if the schedule satisfies it and, if not, show a (minimum) reordering of read operations that would satisfy the criteria.
+
+[[./img/ex_con2.jpg]]
+
+Complete the schedule with the missing values in a way that respects the weak consistency criterion.
+
+[[./img/ex_con3.jpg]]
+
+The diagram displays a schedule, where =W(x)a= stands for "write =a= in =x=" (same convention for =R(x)a=). The calls on the synchonization variable =S= are represented by =S1-S4=.
+- Complete the schedule with the missing values according to the weak consistency criterion.
+- Why the weak consistency model requieres the access to =S= to be sequentially consistent? How the schedule would change if the global order of access was =S1,S2,S4,S3=.
+
+* TODO Message ordering
+
+[[./img/ex_mo1.jpg]]
+
+Does the exchange of messages follow a total order?
+
+[[./img/ex_mo2.jpg]]
+[[./img/ex_mo3.jpg]]
+[[./img/ex_mo4.jpg]]
+
+For each diagram, tell if it follows FIFO, causal or total message ordering (and if not, explain why).
+
+* TODO Virtual synchrony multicast
+
+[[./img/ex_vsm1.jpg]]
+
+Assume all processes start with the view =V0=. Is the execution virtually synchronous? Is it an instance of FIFO, causal or total message ordering?
+
+[[./img/ex_vsm2.jpg]]
+
+Assume all processes start with the view =V0=. Is the execution virtually synchronous? Is it an instance of FIFO, causal or total message ordering?
+
+* TODO Agreement in process groups
+
+[[./img/ex_agr.jpg]]
+
+For each round of the FloodSet algorithm, describe the message exchange, intermediate sets and the decision values. Why does FloodSet guarantee agreement in =f+1= rounds (with =f= bound on the number of faulty processes).
+
+* Atomic commitment
+
+Consider a non-blocking 3PC protocol
+- Which failure modes can 3PC tolerate? :: Only partial failures, no total failures or network partitions.
+- What is a non-blocking protocol? :: The protocol takes decisions after a timeout to prevent waiting indefinitely.
+
+Describe the behaviour of 3PC in the following scenario: a distributed system with processes =P0,P1,P2,P3,P4= where
+- =P0= is the coordinator and receives a =YES= vote from each partecipant.
+- Before =P0= sends the =PRE-COMMIT= message, a network failure splits the processes in two group: =A: {P0,P1}, B:{P2,P3,P4}=.
+- The network is indefinitly partitioned (or at least long enough for the processes to time out).
+
+While =P0= shares the =PRE-COMMIT= with =P1=, group =B=  doesn't receive it and run a termination protocol: they elect a leader, and eventually decide to abort.
+
+[[./img/ex_ac.jpg]]
+
+The picture shows the state of survivors sets after a coordinator crashed. With the respective protocols, describe
+- The message exchange among the processes.
+- The outcome of the transaction.
+- If a new coordinator must be elected, omit the election protocol and just point out the new coordinator.
+- Consider the 3PC algorithms that tolerates only partial crash failures.
+
+For the case of 2PC, the nodes make an all-to-all communication (no leader election) and eventually all the nodes in =READY= state will be informed from the one in =COMMIT= state, resulting in a commit.
+
+For the case of 3PC, the nodes elect a new coordinator that, being informed of the =PRE-COMMIT= state, decides and informs everybody to commit.
