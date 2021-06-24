@@ -4,6 +4,24 @@ Collection of notes and code about the Distributed Systems 1 course, part of the
 
 * TODO Synchronization
 * TODO Consistency and Replication
+
+** Consistency models
+
+Consistency is the main problem when dealing with replicas. A /consistency model/ is a contract that provides a set of guarantees to processes that access a distributed data store.
+
+In a /strict consistency/ model, any read operation returns the value of the last write. In other words, any write is instantaneously visible to all the processes. This is an ideal but impossible model since
+- Distributed systems have no global clock.
+- Conflicts can arise even in a local system.
+
+[[./img/con_seq.jpg]]
+
+The /sequential consistency/ model guarantees that all processes see the same interleaving of operations in some sequential order.
+
+
+
+*** Sequential consistency
+*** Causal consistency
+*** FIFO consistency
 * TODO Middleware
 * TODO Fault tolerance
 ** TODO Introduction
