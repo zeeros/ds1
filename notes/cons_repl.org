@@ -28,6 +28,11 @@ The /weak/ consistency model moves the consistency problem in the hands of the p
 - No operation on a synchronization variable is allowed until all previous writes are completed.
 - No read-write operation on data is allowed until all previous operations on synchronization variables are completed.
 
-* TODO Client-centric consistency models
+* Client-centric consistency models
 
-A /client-centric consistency model/ is a contract that provides a set of guarantees to any process that accesses a distributed data store, but from the persepctive of the client: no globally-consistent view is provided. This type of contract is suitable for systems where /eventual consistency/ is sufficient (e.g. Web caches, DNS).
+A /client-centric consistency model/ is a contract that provides a set of guarantees to any process that accesses a distributed data store, but from the persepctive of the client: no globally-consistent view is provided. This type of contract is suitable for systems where /eventual consistency/ is sufficient (e.g. Web caches, DNS). Consider operations on a data item =X=
+- Monotonic Weads :: If a client reads it, any successive read  by the same client provides either the same or a more recent value.
+- Monotonic Writes :: If a client performs =W1= before =W2=, =W1= is executed before =W2= on all copies of data.
+- Writes Follow Reads :: If a client performs =W1=, reads a different value and performs =W2=, then =W1= is executed before =W2= on all copies of data.
+- Read Your Writes :: If client performs =W= its effect will always be seen with successive reads by the same client.
+
