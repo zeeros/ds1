@@ -74,21 +74,44 @@ The diagram follows the same conventions previously described, but here there ar
 - In link =CE= two tokens are (implicitly) shared.
 - =D= can't possibly be sending tokens, since he had received none yet and =A= is the initiator.
 
-* TODO Consistency models
+* Consistency models
 
 [[./img/ex_con1.jpg]]
 
 For each consistency criteria (FIFO, causal, sequential) tell if the schedule satisfies it and, if not, show a (minimum) reordering of read operations that would satisfy the criteria.
 
+Remember that in the /FIFO/ model
+- The writes done by a single process are read by all others in the order they were issued.
+- Writes from different processes may be read at any order at different machines.
+=P3= reads =c= before =b=, but =P1= writes =c= after =b=: the schedule is not FIFO, but it would be if =P3= would read =c= before =b=.
+
+Also remember that respecting the FIFO model is a requirement for both /causal/ and /sequential/ delivery, so the schedule is neither causal or sequential.
+
+The /causal/ model binds writes that are potentially causally related to be seen in the same order by all processes, while concurrent writes may be seen in any order. Making the schedule FIFO as suggested before is not enough to enforce causal order: =P2= should read =b= before =d=.
+
+The causal model is also a requirement for the sequential model: in /sequential/ model operations are executed in the some (and same) sequential order among the processes. In this case the proposed reordering for the causal model works also for the sequential one.
+
 [[./img/ex_con2.jpg]]
 
 Complete the schedule with the missing values in a way that respects the weak consistency criterion.
+
+Remember that with /weak/ consistency the access to synchronization variables provides the guarantee to access data consistently.
+
+If the schedule implements weak consistency
+- The first read can be either =a,b,c,e= since no synchronization as been called yet.
+- The second read must be =b=, since =S=  has been called.
+- The third read can be either =a,b,c,e= since no synchronization as been called yet.
 
 [[./img/ex_con3.jpg]]
 
 The diagram displays a schedule, where =W(x)a= stands for "write =a= in =x=" (same convention for =R(x)a=). The calls on the synchonization variable =S= are represented by =S1-S4=.
 - Complete the schedule with the missing values according to the weak consistency criterion.
 - Why the weak consistency model requieres the access to =S= to be sequentially consistent? How the schedule would change if the global order of access was =S1,S2,S4,S3=.
+
+The missing values are
+- For =R(x)= in =P2=, either =a,d,c= since =b= has already been read before =a=.
+- For the first and the second =R(x)=, either =a= or =b=.
+- For =R(x)= in =P4=, it is =d= since it is the last value pushed to the system. If =S4= comes before =S3=, the last value pushed would be =c= from process =P3=.
 
 * TODO Message ordering
 
