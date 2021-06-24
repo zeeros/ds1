@@ -35,4 +35,3 @@ A /client-centric consistency model/ is a contract that provides a set of guaran
 - Monotonic Writes :: If a client performs =W1= before =W2=, =W1= is executed before =W2= on all copies of data.
 - Writes Follow Reads :: If a client performs =W1=, reads a different value and performs =W2=, then =W1= is executed before =W2= on all copies of data.
 - Read Your Writes :: If client performs =W= its effect will always be seen with successive reads by the same client.
-
