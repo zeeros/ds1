@@ -1,8 +1,84 @@
 #+TITLE: Fault tolerance
 
-* TODO Introduction
-* TODO Client-server communication
-* TODO Message ordering
-* TODO Reliable group communication
+* Introduction
+
+Fault tolerance is an important requirement when dealing with distributed systems. To measure the dependability of a system we can rely on several metrics
+- Availability :: Probability that a system is up at a random time.
+- Reliability :: Probability that a system, started at time =t0=, is up at time =t0+t=.
+- Safety :: Probability that a system suffers no dramatic failur by time =t=.
+- Maintainability :: Probability that a system, down at time =t0=, is restored by =t0+t=.
+
+Since no systems can be absolutely dependable, failures and faults are part of the life of any system and understanding them helps achieving a so called /fault tolerance/. Considering a typical client-server interaction, we can classify them by their frequency: /transient/, /intermittent/, /permanent/. We can also classify failures by their /type/.
+- Omission failure :: The server fails to respond to a request, either for a /receive omission/ of the incoming message or a /send omission/ of the response.
+- Timing (performance) failure :: The server responds after a timeout.
+- Response failure :: The server misbehaves, either by a /value failure/ or a /state transition failure/.
+- Crash failure :: The server halts.
+- Arbitrary or Byzantine failure :: The server might produce arbitrary responses at arbitrary times.
+
+Considering timing and crash failures, how can a system distinguish one from the other? /Synchronous systems/ have, by design, no timing failure since communication delays, execution times and clock drifts are all bounded. This means that crash detection is fairly trivial (e.g. ping the server periodically, if crashed it times out).
+However, most systems are /asynchronous/ and have no reliable /failure detection/ that can distinguish crashes from timeouts.
+
+One a fault occures, how can a system deal with it?
+- Mask :: Completely hide the faulty /value/ (e.g. Triple-HD redundancy and quorum mechanism), the /crash/ (e.g. process replication), the /omission/ (e.g. redundant channels).
+- Convert :: Decrease the severity of the fault by converting its type (e.g. drop a packet if CRC is wrong).
+
+* Client-server communication
+
+Reliability in client-server communication is critical, especially in systems that aim to achieve network transparency such as RPCs: consistency between local and remote calls is limited by inevitable failures and faults in the network. How can a distributed system mask failures in this scenario?
+
+If a client that can't locate the server might only throw an exception, the problem is more complex when requests or responses are lost for some reasons.: did the server crash? Was the requested operation executed? If so, how many times?
+While local calls use the /exactly-once semantics/, an RPC system must chose another model.
+- When operations are /idempotent/ (safe to execute multiple times), the /at-least-once semantics/ can be used.
+- Otherwise, a /at-most-once/ is desirable. The system must keep an history of requests to identify duplicate requests.
+
+When dealing with server crashes, the client can adopt different reissue strategies (/always, never, if ACKed, if not ACKed/) to cover some crash cases. However, no strategy provides exactly-once semantics for masking crashes. 
+
+The key to tolerate and mask failures is /redundancy/: we can rely on information, time, physical redundancy. With /physical redundancy/ the system relies on a group of components (replicas) to mask crashes, timeouts and value failures. To achieve /k-fault tolerance/, the size of the group depends on the type of failure (e.g. for byzantine =2k+1= replicas with quorum).
+
+* Message ordering
+
+Given two events =i, j=, =i= /happens-before/ =j= if
+- =i, j=  are in the same process and =i= comes before =j.=
+- =i= is the send event of message =m=, =j= is the receive of =m=.
+- =i->k->e=
+
+With the notion of happens-before and send/deliver events, we can introduce three types of ordering
+- FIFO ::  =Sp(m)->Sp(m') >> Dq(m) -> Dq(m')=.
+- Causal :: =Sp(m)->Sq(m') >> Dr(m) -> Dr(m')=, so FIFO and different senders.
+- Total :: =Dp(m)->Dp(m') << >> Dq(m) -> Dq(m')=, unrelated to the previous orderings.
+
+[[./img/m_ordering.jpg]]
+
+* Reliable group communication
+** Fixed groups, unreliable channels
+
+Consider a flat group of nodes that communicates in /basic reliable multicast/, where each nodes sends messages to everybody: if everybody acknowledges the messages /feedback implosion/ might occur. Solutions might involve
+- Piggyback ACK :: Relies on a constant wave of traffic.
+- Point-to-point :: If allowed by communication primitives.
+- Negative ACK :: ACK with no reception, still may require many ACKs and requires keeping an history.
+
+A more /scalable reliable multicast/ uses negative, randomly staggered ACKs in multicast: receivers getting a NACK suppress their feedback. The effectiveness of this solution relies on the choice of a proper /staggering/, that is actually nontrivial. Most of all, processes that lose no message are still flooded by NACKs, and this is why separate groups of  "similar" nodes are used (still shows scalability problems).
+
+Flat groups are always affected by some kind of /feedback implosion/. With /hierarchical feedback control/ nodes are grouped and led by a coordinator, that chooses a specific policy for its group. Managing hierarchies in the physical layer is quite complex, so it is usually implemented on application level.
+
+** Dynamic groups, reliable channels
+
+With dynamic membership groups might change while multicasts are issued. In this case the /virtual synchrony/ algorithm provides a scenario where group changes are instantaneous (known as close synchrony). To do so, each member keeps a /view/ that represents its knowledge of the group: a change of view corresponds to a change of /epoch/, with each member seeing the same sequence of views.
+
+[[./img/vc_views.jpg]]
+
+Inside an epoch, messages may be /unordered, FIFO, causal/ and /with or without total-order delivery/. In such a scenario, multicasts cannot cross epochs and are reliable and done in an all-or-none way with the respect to operational partecipants.
+
+The only case in which the multicast fails is if an initiator fails in the middle of it, so each process
+- Delivers immediatly the received message and it keeps a copy.
+- If every correct process in the current view has it then the message is /stable/.
+- Sends a copy of the message to any process that needs it.
+
+[[./img/vc_example.jpg]]
+
+A /two-phase/ variant ensures that not only operational processes, but also the ones that crash after delivering.
+
+[[./img/vc_ack.jpg]]
+
 * TODO Agreement in process groups
 * TODO Atomic commitment
