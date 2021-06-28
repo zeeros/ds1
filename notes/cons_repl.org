@@ -1,6 +1,5 @@
 #+TITLE: Consistency and Replication
 
-
 * Data-centric consistency models
 
 A /data-centric consistency model/ is a contract that provides a set of guarantees to any process that accesses a distributed data store to provide a globally-consistent view.
@@ -35,3 +34,25 @@ A /client-centric consistency model/ is a contract that provides a set of guaran
 - Monotonic Writes :: If a client performs =W1= before =W2=, =W1= is executed before =W2= on all copies of data.
 - Writes Follow Reads :: If a client performs =W1=, reads a different value and performs =W2=, then =W1= is executed before =W2= on all copies of data.
 - Read Your Writes :: If client performs =W= its effect will always be seen with successive reads by the same client.
+* Consistency protocols
+
+In general consistency protocols often implement sequential consistency, and we will consider only this case.
+
+With /primary-based protocols/ a node (primary server) is in charge of keeping data consistency and collects all the writes.
+- Local-write :: Clients are blocked until updates are propagated.
+- Remote-write :: Clients become the new servers for the data item they request and update.
+
+With /replicated-write protocols/ data operations are simultaneously performed by several replicas. The /quorum-based algorithm/ is an example of this approach: clients must reach a quorum (agree) before any read/write operation. Let =R= and =W= be respectively the number of replicas required for a quorum for read and write operations, then
+- =R+W= must be strictly higher then the total number of replicas to prevent read/write conflicts.
+- =W= must be strictly higher then half of the number of replicas to prevent write/write conflicts.
+
+* Replication
+
+To implement replication we need to to choose how and where /data replicas/ are placed.
+
+[[./img/replicas.jpg]]
+
+Replication requires also to deal with /updates/
+- What should be propagated? :: Depending on the ratio between reads and writes, it might be better to either propagate the modified data (if =#reads>>#writes=) or just a notification (if =#reads<<#writes#=). With /active replication/ we can instead propagate only the information needed to execute the update in the replica, however for complex updates the required processing power might be high.
+- How to propagate it? :: If =#reads>>#writes= it might be convenient to use a /push-based approach/ to forcefuly update all replicas, else a /pull-based approach/ where clients fetch updates only when they need them. An hybrid solution might the use of /leases/: if the push mode times out, the pull mode is used. The use of /epidemic algorithms/, while providing no deterministic guarantees, is intrinsically scalable, fault-tolerant and efficient.
+
