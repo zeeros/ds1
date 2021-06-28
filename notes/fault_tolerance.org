@@ -1,0 +1,8 @@
+#+TITLE: Fault tolerance
+
+* TODO Introduction
+* TODO Client-server communication
+* TODO Message ordering
+* TODO Reliable group communication
+* TODO Agreement in process groups
+* TODO Atomic commitment

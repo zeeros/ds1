@@ -5,13 +5,7 @@ Collection of notes and code about the Distributed Systems 1 course, part of the
 * TODO Synchronization
 * TODO [[file:notes/cons_repl.org][Consistency and Replication]]
 * TODO Middleware
-* TODO Fault tolerance
-** TODO Introduction
-** TODO Client-server communication
-** TODO Message ordering
-** TODO Reliable group communication
-** TODO Agreement in process groups
-** TODO Atomic commitment
+* TODO [[file:notes/fault_tolerance.org][Fault tolerance]]
 * TODO Distributed Hash Tables
 * TODO Big Distributed Systems
 * [[file:notes/exercises.org][Exercises]]
