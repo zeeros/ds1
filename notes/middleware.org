@@ -1,0 +1,68 @@
+#+TITLE: Middleware
+
+* RPC
+
+In the early 80s the /Remote Procedure Call/ was devised to mask client-server calls as local calls. Modern day architectures, such as /web services/, are in fact based on the RPC model.
+
+[[./img/rpc_overview.jpg]]
+
+Implementing a RPC middleware requires makign several design choices.
+- Parameter passing :: The passing of parameters through RPC requires /marshalling/ (different data representation) and /serialization/ (structured to flat data), both handled by the middleware. To do so the middleware automates these operations by relying on an /Interface Definition Language/ and a /data format/ for communication. While local development heavily relies on the use of /pointers/ to the address space, but how can parameters be passed by reference in a remote context? RPC can either support only calls by the value or just drop parameter passing.
+- Dynamic binding :: How does the client find out in a dynamic way which server provides a given service? This means both locating the server and its communication port.
+- Dynamic activation :: Idle server processes waste resources. A solution might be /forking/ the server process when needed.
+
+Improvements to the classic RPC model have been devised other the years.
+- Lightweight RPC :: While a standard RPC uses the same primitives regardless of distribution, /lightweight RPC/ uses just local facilities for local message passing. This is achieved by reserving some private, shared memory space and context switch (by the kernel).
+- Asynchronous RPC :: Since synchronous calls can be potentially wasteful and limit concurrency, asynchronous call can be devised when no result is needed (with or without an ACK) or result is required (through a promise).
+
+* Sun RPC
+
+The /Sun RPC/ model is a de-facto standard over the internet (e.g. NFS, Linux) that uses /eXternal Data Representation/ as data representation and proper IDL. In the original model the development cycle is structured as follows.
+
+[[./img/rpc_sun.jpg]]
+
+- Parameter passing :: Parameter passing is limited to one parameter (by value).
+- Dynamic binding :: Sun RPC implements dynamic binding by using /portmap/, a daemon process that binds call to server/ports: the server shares its port and its service identifier to portmap, the client asks to portmap the port for the service. The clients still needs to find out the address of the server.
+- Dynamic activation :: A /inetd/ daemon is used to fork server processes.
+
+* DCE RPC
+
+/Distributed Computing Environment/ was devised to include many more features than Sun RPC. 
+- Dynamic binding :: Relies on a /directory server/, in charge of inform clients of the location of the servers (the server runs a local daemon to share its port).
+
+[[./img/rpc_dce_db.jpg]]
+
+* Web services
+
+/Web services/ mimic the common structure of RPC systems through internet technologies and a set of standards: WSDL (for definition), UDDI (for discovery) and SOAP (for communication with XML).
+
+[[./img/rpc_ws.jpg]]
+
+SOAP is quite cumbersome, so other serialization frameworks are often adopted: JSON, Google Protocol Buffer, Apache Thrifty and Avro.
+
+* Distributed Object Middleware
+
+RPC in OOP, where the concept of interface is quite natural. The IDL needs to be extended to support typical characteristics of objects.
+
+/Java Remote Method Invocation/ is an implementation for distributed object middleware that focuses on remote method invocation.
+- In a Java-only ecosystem, IDL are superfluous and Java interfaces are used instead. Remote objects need to implement =java.rmi.Remote=, =java.rmi.RemoteException= and =java.io.Serializable= for parameter passing.
+- Java Serialization framework defines the wire format.
+
+Remote references contain the client stub (proxy) and are obtained either through plain parameter passing in Java or by querying a =rmiregistry= directory. Compared to the use of /sockets/, Java RMI provides a simpler abstraction to the programmer.
+
+By design choice, local and remote parameter passing are explicitly different.
+
+/Common Object Request Broker Architecture/ is an implementation for distributed object middleware that focuses on interoperability.
+* Message-Oriented Middleware
+
+Nodes are aware of the distributed nature of the system, but access to an abstracted layer through message passing. The message infrastructure is provided at the application layer through an /overlay network/, where communication can be /transient/ (and synchronous/asynchronous).
+
+[[./img/mom_trans.jpg]]
+
+Or /persistent/, both asynchronous and synchronous.
+
+[[./img/mom_pers.jpg]]
+
+
+- Message queuing :: Implements a point-to-point, persistent and asynchronous communication: the result is communication decoupled from time and space, like emails, naturallu inclined to P2P communication (but also client-server). Messages are managed through queues with =PUT=, =GET=, =POLL= and =NOTIFY= primitives.
+- Publish-subscribe :: Implements a multipoint, asycnhronous communication built around /events/ are notified through subscribtion to a (centralized or distributed) /dispatcher/. Subscription might be /topic-based/ (through a priori topics), /content-based/ (through filters) or a combination of the both.

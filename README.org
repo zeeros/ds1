@@ -3,9 +3,9 @@
 Collection of notes and code about the Distributed Systems 1 course, part of the Master in Computer Science at the Università di Trento (UNITN).
 
 * TODO Synchronization
-* TODO [[file:notes/cons_repl.org][Consistency and Replication]]
-* TODO Middleware
-* TODO [[file:notes/fault_tolerance.org][Fault tolerance]]
+* [[file:notes/cons_repl.org][Consistency and Replication]]
+* [[file:notes/middleware.org][Middleware]]
+* IN-PROGRESS [[file:notes/fault_tolerance.org][Fault tolerance]]
 * TODO Distributed Hash Tables
 * TODO Big Distributed Systems
 * [[file:notes/exercises.org][Exercises]]
