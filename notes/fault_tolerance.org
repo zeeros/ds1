@@ -81,4 +81,34 @@ A /two-phase/ variant ensures that not only operational processes, but also the 
 [[./img/vc_ack.jpg]]
 
 * TODO Agreement in process groups
-* TODO Atomic commitment
+* IN-PROGRESS Atomic commitment with faults
+
+Given a set of processes with a /coordinator/ and /partecipants/, we assume that
+- Log (with no fails) their decisions and current state to allow a full  /recovery/ after a failure.
+- Deal with /lost packets/ by re-requesting votes (coordinator) or decisions (partecipant).
+
+This is equivalent to convert all failures to /performance/ failures, but how to deal with these? 
+- Liveness :: Blocking processes until they receive a reply is undesirable
+- Safety :: We can timeout, but with a correct decision.
+
+With atomic commitment we want a
+- Uniform agreement :: All-or-none commit/abort.
+- Validity :: Commit decision requires all "yes" votes.
+- Non-triviality :: If all voted "yes", then decide commit.
+- Termination :: With no faults, all processes eventually decide.
+- Decision is final :: Decisions can't be changed.
+
+However it is simply impossible to have
+- Non-blocking algorithm in AC with /communication failures/ or /total crashes/.
+- AC with byzantine failures.
+
+** 2PC
+
+[[./img/2pc.jpg]]
+
+- Decision :: The coordinator must wait all votes, but a partecipant voting "No" aborts immediatly.
+- Fails ::  If partecipants fail the coordinator can /timeout/, =ABORT= and terminate. If the coordinator fails, partecipants may timeout before sending a vote (and unilaterally crash) or after sending =Y= (and execute the termination protocol)
+  - Termination protocol :: While waiting for the decision, they ask to all partecipants: if a decision is retrieved act accordingly, otherwise block.
+- Recovery action :: If partecipants recover then =ABORT= if no vote was cast, do nothing if a decision was taken, if in =READY= start the termination protocol. If the coordinator recovers then =ABORT= if no decision was cast, send the decision if instead he already decided.
+
+
